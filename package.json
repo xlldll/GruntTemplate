@@ -21,20 +21,6 @@
   "homepage": "https://github.com/xlldll/GruntTemplate#readme",
   "dependencies": {
     "grunt": "^1.0.1",
-    "grunt-bower-task": "^0.4.0",
-    "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-connect": "~0.5.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-csslint": "^1.0.0",
-    "grunt-contrib-cssmin": "~0.7.0",
-    "grunt-contrib-imagemin": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-requirejs": "^1.0.0",
-    "grunt-contrib-sass": "~0.6.0",
-    "grunt-contrib-uglify": "^1.0.1",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-newer": "^1.2.0",
-    "load-grunt-configs": "^1.0.0",
-    "load-grunt-tasks": "^3.5.0"
+    "grunt-bower-task": "^0.4.0"
   }
 }

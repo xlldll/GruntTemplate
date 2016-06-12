@@ -16,20 +16,23 @@ module.exports = (grunt) ->
 		dirs.destDir + '/css',
 		dirs.destDir + '/img',
 		dirs.destDir + '/fonts']
-	[srcScss, srcCss,srcCssmin,myCss,myCssmin] = [dirs.srcDir + '/scss',
+	[srcScss, srcCss,srcCssmin,scss2css,scss2cssmin] = [dirs.srcDir + '/scss',
 		dirs.srcDir + '/css',
 		dirs.srcDir + '/css/cssmin',
-		dirs.srcDir + '/myCss',
-		dirs.srcDir + '/myCss/cssmin',]
+		dirs.srcDir + '/scss2css',
+		dirs.srcDir + '/scss2css/cssmin',]
 	[srcJs, srcJsCompress,srcImg,srcFonts] = [dirs.srcDir + '/js',
 		dirs.srcDir + '/js/jsCompress',
 		dirs.srcDir + '/img',
 		dirs.srcDir + '/fonts']
+	[coffeeJs, coffee2Js] = [dirs.srcDir + '/coffeeJs',
+		dirs.srcDir + '/coffee2Js']
+
 	### 任务配置 ###
 	grunt.config.init(
 		pkg     :grunt.file.readJSON ( 'package.json' )
 		imagemin:
-			dynamic:
+			srcImg:
 				options:
 					optimizationLevel:3
 				files  :[
@@ -46,20 +49,20 @@ module.exports = (grunt) ->
 					expand :true
 					cwd    :srcScss
 					src    :['**/*.scss']
-					dest   :myCss
+					dest   :scss2css
 					ext    :'.css'
 					flatten:true
 				]
 		csslint :
-			srcScss:
+			scss2css:
 				options :
 					csslintrc:'.csslintrc.json'
 				checkCss:
 					options:
 						import:2
-					src    :['<%= srcgruntCss %>/*.css']
+					src    :['<%= scss2css %>/*.css']
 		cssmin  :
-			srcCss:
+			css:
 				files:[
 					expand:true
 					cwd   :srcCss
@@ -68,35 +71,45 @@ module.exports = (grunt) ->
 					dest  :srcCssmin
 					ext   :'.min.css'
 				]
-			myCss :
+			scss2css :
 				files:[
 					expand:true
-					cwd   :myCss
+					cwd   :scss2css
 					src   :['*.css',
 						'!**/*.map']
-					dest  :myCssmin
+					dest  :scss2cssmin
 					ext   :'.min.css'
 				]
+		### 合并scss2cssmin中的所有的css到srcCssmin，叫做scss2cssConcat ###
 		concat  :
 			options    :
 				separator   :'/*****************!CONCAT*******************/'
 				stripBanners:true
 				banner      :'/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
 					'<%= grunt.template.today("yyyy-mm-dd") %> */\n'
-			myCssConcat:
-				src :[myCssmin + '/*.css']
-				dest:srcCssmin + '/all.min.css'
+			scss2cssConcat:
+				src :[scss2cssmin + '/*.css']
+				dest:srcCssmin + '/scss2cssConcat.min.css'
+		coffee:
+			coffeeJs:
+				expand: true
+				flatten: true
+				cwd: coffeeJs
+				src: ['*.coffee']
+				dest: coffee2Js
+				ext: '.js'
 		jshint  :
 			options  :
 				jshintrc:".jshintrc.json"
-			js       :[srcJs + "/{**/,!**/}*.js"]
+			coffee2Js       :[coffee2Js + "/{**/,!**/}*.js"]
 			Gruntfile:["Gruntfile.js"]
+		### 压缩srcJs和coffee2Js中的js到srcJsCompress ###
 		uglify  :
 			options   :
 				stripBanners:true
 				mangle      :false
 				banner      :"/*! <%=pkg.name%>-<%=pkg.version%>.js <%= grunt.template.today('yyyy-mm-dd HH:MM') %> */\n"
-			compressJS:
+			srcJs:
 				files:[
 					expand :true
 					cwd    :srcJs,
@@ -105,7 +118,16 @@ module.exports = (grunt) ->
 					ext    :'.js'
 					flatten:true
 				]
-			minJS     :
+			coffee2Js:
+				files:[
+					expand :true
+					cwd    :coffee2Js,
+					src    :'{**/,!**/}*.js'
+					dest   :srcJsCompress
+					ext    :'.js'
+					flatten:true
+				]
+			minJs     :
 				files:[
 					expand:true
 					cwd   :srcJsCompress
@@ -133,6 +155,10 @@ module.exports = (grunt) ->
 			cssmin:
 				files:[
 					{ expand:true, cwd:srcCssmin, src:['*'], dest:destCss, flatten:true, filter:'isFile' }
+				]
+			scss2css:
+				files:[
+					{ expand:true, cwd:scss2cssmin, src:['*'], dest:destCss, flatten:true, filter:'isFile' }
 				]
 		connect :
 			options:
@@ -162,12 +188,16 @@ module.exports = (grunt) ->
 			scss2css  :
 				files:[srcScss + ' /{**/,!**/}*.scss']
 				tasks:['newer:sass',
-					'newer:cssmin:srcgruntCss',
+					'newer:cssmin',
 					'newer:concat',
-					'newer:copy:cssmin']
-			js2minjs  :
+					'newer:copy:cssmin',
+					'newer:copy:scss2css',]
+			srcJs  :
 				files:[srcJs + ' /{**/,!**/}*.js']
-				tasks:['newer:uglify']
+				tasks:['newer:uglify:srcJs']
+			coffeeJs  :
+				files:[coffee2Js + ' /{**/,!**/}*.js']
+				tasks:['newer:uglify:coffee2Js']
 			imgmin    :
 				files  :[srcImg + '/**/**/**/**/*']
 				tasks  :['newer:imagemin']
@@ -181,6 +211,7 @@ module.exports = (grunt) ->
 					'./' + srcCss + '/{**!/,!**!/}*.css'
 					'./' + srcScss + '/{**!/,!**!/}*.scss'
 					'./' + srcJs + '/{**!/,!**!/}*.js'
+					'./' + coffee2Js + '/{**!/,!**!/}*.js'
 					'./' + srcImg + '/{**!/,!**!/}*.{png,jpg}'
 				]
 		###
@@ -216,9 +247,9 @@ module.exports = (grunt) ->
 			cssFileN = fileN + '.css';
 			cssFileM = fileN + '.css.map';
 			cssFileMin = fileN + '.min.css';
-			cssFile = myCss + cssFileN;
-			cssMap = myCss + cssFileM;
-			cssMin = myCssmin + cssFileMin;
+			cssFile = scss2css + cssFileN;
+			cssMap = scss2css + cssFileM;
+			cssMin = scss2cssmin + cssFileMin;
 			if( grunt.file.exists(cssFile) )
 				grunt.file.delete(cssFile);
 				grunt.file.delete(cssMap);
@@ -239,7 +270,7 @@ module.exports = (grunt) ->
 					return false;
 		else if( target == 'scss2css' )
 			if( action == 'deleted' || action == 'renamed' )
-				delFile(myCss, filepath, srcScss);
+				delFile(scss2css, filepath, srcScss);
 				if( action == 'deleted' )
 					return false;
 		else if( target == 'js2minjs' )
