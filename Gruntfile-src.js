@@ -1,4 +1,4 @@
-module.exports = function ( grunt ) {
+module.exports = function( grunt ) {
 	//路径
 	var dirs           = {
 		    destDir : 'dest',
@@ -19,8 +19,8 @@ module.exports = function ( grunt ) {
 	    srcJsCompress  = dirs.srcDir + '/js/jsCompress',
 	    srcImg         = dirs.srcDir + '/img',
 	    srcFonts       = dirs.srcDir + '/fonts';
-	grunt.config.init ( {
-		pkg      : grunt.file.readJSON ( 'package.json' ),
+	grunt.config.init( {
+		pkg      : grunt.file.readJSON( 'package.json' ),
 		//IMAGE
 		imagemin : {
 			/* 压缩图片大小 */
@@ -52,17 +52,17 @@ module.exports = function ( grunt ) {
 				}
 			}
 		},
-		csslint : {
-		 options  : {
-		 csslintrc : '.csslintrc.json'
-		 },
-		 checkCss : {
-		 options : {
-		 import : 2
-		 },
-		 src : [ '<%= srcgruntCss %>/*.css' ]
-		 }
-		 },
+		csslint  : {
+			options  : {
+				csslintrc : '.csslintrc.json'
+			},
+			checkCss : {
+				options : {
+					import : 2
+				},
+				src     : [ '<%= srcgruntCss %>/*.css' ]
+			}
+		},
 		cssmin   : {
 			srcCss      : {
 				files : [ {
@@ -167,7 +167,7 @@ module.exports = function ( grunt ) {
 				open       : {
 					target   : 'http://127.0.0.1:9080', // target url to open
 					appName  : 'chrome', // name of the app that opens, ie: open, start, xdg-open
-					callback : function () {} // called when the app has opened
+					callback : function() {} // called when the app has opened
 				},
 				port       : 9080,
 				hostname   : '127.0.0.1', //默认就是这个值，可配置为本机某个 IP，localhost 或域名
@@ -189,19 +189,19 @@ module.exports = function ( grunt ) {
 			}
 		},
 		watch    : {
-			options     : {
-				dateFormat : function ( time ) {
-					grunt.log.writeln ( '监视耗时 ' + time + '毫秒，在' + (new Date ()).toString () );
-					grunt.log.writeln ( '等待更多变化...' );
+			options  : {
+				dateFormat : function( time ) {
+					grunt.log.writeln( '监视耗时 ' + time + '毫秒，在' + (new Date()).toString() );
+					grunt.log.writeln( '等待更多变化...' );
 				}
 			},
 			/*configFiles : {
-				files   : [ 'Gruntfile.js','config/!*.js' ],
-				options : {
-					reload : false
-				}
-			},*/
-			scss2css    : {
+			 files   : [ 'Gruntfile.js','config/!*.js' ],
+			 options : {
+			 reload : false
+			 }
+			 },*/
+			scss2css : {
 				files : [ srcScss + ' /{**/,!**/}*.scss' ],
 				tasks : [ 'newer:sass','newer:cssmin:srcgruntCss','newer:concat','newer:copy:cssmin' ]
 			},
@@ -219,11 +219,11 @@ module.exports = function ( grunt ) {
 			 spawn : false
 			 }
 			 },*/
-			js2minjs    : {
+			js2minjs : {
 				files : [ srcJs + ' /{**/,!**/}*.js' ],
-				tasks : [ 'newer:uglify']
+				tasks : [ 'newer:uglify' ]
 			},
-			imgmin      : {
+			imgmin   : {
 				files   : [ srcImg + '/**/**/**/**/*' ],
 				//files   : [ srcImg + '/{**/,!**/}*.{png,jpg,jpeg,gif}' ],
 				//files   : [ srcImg + '/**/*' ],
@@ -234,97 +234,97 @@ module.exports = function ( grunt ) {
 			}
 			//实时修改
 			/*livereload  : {
-				options : {
-					//监听前面声明的端口  35729
-					livereload : '<%=connect.options.livereload%>'
-				},
-				files   : [
-					'./' + dirs.srcDir + '/!*.html',
-					'./' + srcCss + '/{**!/,!**!/}*.css',
-					'./' + srcScss + '/{**!/,!**!/}*.scss',
-					'./' + srcJs + '/{**!/,!**!/}*.js',
-					'./' + srcImg + '/{**!/,!**!/}*.{png,jpg}'
-				]
-			}*/
+			 options : {
+			 //监听前面声明的端口  35729
+			 livereload : '<%=connect.options.livereload%>'
+			 },
+			 files   : [
+			 './' + dirs.srcDir + '/!*.html',
+			 './' + srcCss + '/{**!/,!**!/}*.css',
+			 './' + srcScss + '/{**!/,!**!/}*.scss',
+			 './' + srcJs + '/{**!/,!**!/}*.js',
+			 './' + srcImg + '/{**!/,!**!/}*.{png,jpg}'
+			 ]
+			 }*/
 		}
 	} );
 	// load all grunt tasks matching the ['grunt-*', '@*/grunt-*'] patterns
-	require ( 'load-grunt-tasks' ) ( grunt,{ pattern : [ 'grunt-*','@*/grunt-*' ] } );
+	require( 'load-grunt-tasks' )( grunt,{ pattern : [ 'grunt-*','@*/grunt-*' ] } );
 	var delFile;
 	//'dist/js/'=deldir
 	//'src/js/*.js'=files 控制台中变动事件的路径
 	//'src/js/'=srcdir
-	delFile = function ( deldir,files,srcdir ) {
+	delFile = function( deldir,files,srcdir ) {
 		//fileName.js
-		var file = files.substring ( srcdir.length );
+		var file = files.substring( srcdir.length );
 		//fileName
 		//var fileN = getFileName ( file );
-		var fileN = getFileName ( files );
+		var fileN = getFileName( files );
 		//删除源JS的时候，删除发布路径中的minjs以及原路径中的jsCompress
-		if ( files.substr ( -2 ) === 'js' ) {
+		if( files.substr( -2 ) === 'js' ) {
 			//*.min.js
 			var minjsN = fileN + '.min.js';
 			var jsF,minJs;
-			jsF = srcdir + file;
-			minJs = deldir + minjsN;
-			if ( grunt.file.exists ( jsF ) ) {
-				grunt.file.delete ( jsF );
-				grunt.file.delete ( minJs );
+			jsF        = srcdir + file;
+			minJs      = deldir + minjsN;
+			if( grunt.file.exists( jsF ) ) {
+				grunt.file.delete( jsF );
+				grunt.file.delete( minJs );
 				return false;
 			}
 			//删除源scss的时候，删除发布路径中的csss以及mincss
-		} else if ( files.substr ( -4 ) === 'scss' ) {
-			var cssFileN = fileN + '.css';
-			var cssFileM = fileN + '.css.map';
+		} else if( files.substr( -4 ) === 'scss' ) {
+			var cssFileN   = fileN + '.css';
+			var cssFileM   = fileN + '.css.map';
 			var cssFileMin = fileN + '.min.css';
 			var cssFile,cssMap,cssMin;
 			//dist/css/*.css
-			cssFile = srcgruntCss + cssFileN;
+			cssFile        = srcgruntCss + cssFileN;
 			//dist/css/*.css.map
-			cssMap = srcgruntCss + cssFileM;
+			cssMap         = srcgruntCss + cssFileM;
 			//dist/css/cssmin/*.min.css
-			cssMin = srcgruntCssmin + cssFileMin;
-			if ( grunt.file.exists ( cssFile ) ) {
-				grunt.file.delete ( cssFile );
-				grunt.file.delete ( cssMap );
-				grunt.file.delete ( cssMin );
+			cssMin         = srcgruntCssmin + cssFileMin;
+			if( grunt.file.exists( cssFile ) ) {
+				grunt.file.delete( cssFile );
+				grunt.file.delete( cssMap );
+				grunt.file.delete( cssMin );
 				return false;
 			}
-		} else if ( files.substr ( -3 ) === 'png' ) {
+		} else if( files.substr( -3 ) === 'png' ) {
 			var pngFile;
 			//dest/img/*.png
 			pngFile = deldir + file;
-			if ( grunt.file.exists ( pngFile ) ) {
-				grunt.file.delete ( pngFile );
+			if( grunt.file.exists( pngFile ) ) {
+				grunt.file.delete( pngFile );
 				return false;
 			}
 		}
 	};
-	grunt.event.on ( 'watch',function ( action,filepath,target ) {
-		grunt.log.writeln ( filepath + '文件已经' + action + '并触发了' + target + '任务' );
+	grunt.event.on( 'watch',function( action,filepath,target ) {
+		grunt.log.writeln( filepath + '文件已经' + action + '并触发了' + target + '任务' );
 		//src\img\logo-transparen4t.png文件已经deleted并触发了livereload任务
 		//grunt.log.writeln(filepath.substr(-2));
-		if ( target === 'imgmin' ) {
-			if ( action === 'deleted' || action === 'renamed' ) {
-				delFile ( destImg,filepath,srcImg );
-				if ( action === 'deleted' ) {
+		if( target === 'imgmin' ) {
+			if( action === 'deleted' || action === 'renamed' ) {
+				delFile( destImg,filepath,srcImg );
+				if( action === 'deleted' ) {
 					return false;
 				}
 			}
-		} else if ( target === 'scss2css' ) {
+		} else if( target === 'scss2css' ) {
 			//filepath=src/sass/*.scss
-			if ( action === 'deleted' || action === 'renamed' ) {
+			if( action === 'deleted' || action === 'renamed' ) {
 				//删除dist/sass/*.scss
-				delFile ( srcgruntCss,filepath,srcScss );
+				delFile( srcgruntCss,filepath,srcScss );
 				//删除的话则
-				if ( action === 'deleted' ) {
+				if( action === 'deleted' ) {
 					return false;
 				}
 			}
-		} else if ( target === 'js2minjs' ) {
-			if ( action === 'deleted' || action === 'renamed' ) {
-				delFile ( destJs,filepath,srcJsCompress );
-				if ( action === 'deleted' ) {
+		} else if( target === 'js2minjs' ) {
+			if( action === 'deleted' || action === 'renamed' ) {
+				delFile( destJs,filepath,srcJsCompress );
+				if( action === 'deleted' ) {
 					return false;
 				}
 			}
@@ -332,45 +332,45 @@ module.exports = function ( grunt ) {
 	} );
 	//grunt.registerTask ( 'default',[ 'sass','csslint','cssmin','concat','copy','connect','watch' ] );
 	//自定义任务-打包发布合并JS文件为一个
-	grunt.registerTask ( 'build','require demo',function () {
+	grunt.registerTask( 'build','require demo',function() {
 		//任务列表
-		var tasks = [ 'requirejs' ];
+		var tasks   = [ 'requirejs' ];
 		//源码文件
-		var srcDir = 'src';
+		var srcDir  = 'src';
 		//目标文件
 		var destDir = 'dest';
 		//设置参数
-		grunt.config.set ( 'config',{
+		grunt.config.set( 'config',{
 			srcDir  : srcDir,
 			destDir : destDir
 		} );
 		//设置requireJs的信息
-		var taskCfg = grunt.file.readJSON ( 'requireJsCfg.json' );
+		var taskCfg     = grunt.file.readJSON( 'requireJsCfg.json' );
 		var options     = taskCfg.requirejs.main.options,
 		    platformCfg = options.web,
 		    includes    = platformCfg.include,
 		    paths       = options.paths;
-		var pos = -1;
+		var pos         = -1;
 		var requireTask = taskCfg.requirejs;
-		options.path = paths;
-		options.out = platformCfg.out;
+		options.path    = paths;
+		options.out     = platformCfg.out;
 		options.include = includes;
 		//运行任务
-		grunt.task.run ( tasks );
-		grunt.config.set ( "requirejs",requireTask );
+		grunt.task.run( tasks );
+		grunt.config.set( "requirejs",requireTask );
 	} );
 	//'all'
-	grunt.registerTask ( 'all',[ 'newer:sass','newer:cssmin','newer:uglify','newer:concat','newer:copy','connect','watch' ] );
+	grunt.registerTask( 'all',[ 'newer:sass','newer:cssmin','newer:uglify','newer:concat','newer:copy','connect','watch' ] );
 	//sass
-	grunt.registerTask ( 'sass',[ 'newer:sass','newer:cssmin','newer:concat:srcgruntCssmin','newer:copy:cssmin','watch:scss2css' ] );
+	grunt.registerTask( 'sass',[ 'newer:sass','newer:cssmin','newer:concat:srcgruntCssmin','newer:copy:cssmin','watch:scss2css' ] );
 	//js
-	grunt.registerTask ( 'js',[ 'newer:jshint','newer:uglify','watch:js2minjs'] );
+	grunt.registerTask( 'js',[ 'newer:jshint','newer:uglify','watch:js2minjs' ] );
 };
 /*function getFileName( o ) {
  var pos = o.lastIndexOf ( '.' );
  return o.substring ( 0,pos );
  }*/
 function getFileName( o ) {
-	var url = o.split ( "\\" );//这里要将 \ 转义一下
+	var url = o.split( "\\" );//这里要将 \ 转义一下
 	return url[ url.length - 1 ];
 }
