@@ -15,7 +15,6 @@
     "node" : true,
     "es5" : false,
     "browser" : true,
-
     "boss" : false,
     "curly": false,
     "debug": false,

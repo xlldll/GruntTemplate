@@ -60,7 +60,7 @@ module.exports = (grunt) ->
 				checkCss:
 					options:
 						import:2
-					src    :['<%= scss2css %>/*.css']
+					src    :[scss2css+'/*.css']
 		cssmin  :
 			css:
 				files:[
@@ -115,7 +115,7 @@ module.exports = (grunt) ->
 					cwd    :srcJs,
 					src    :'{**/,!**/}*.js'
 					dest   :srcJsCompress
-					ext    :'.js'
+					ext    :'.min.js'
 					flatten:true
 				]
 			coffee2Js:
@@ -124,16 +124,8 @@ module.exports = (grunt) ->
 					cwd    :coffee2Js,
 					src    :'{**/,!**/}*.js'
 					dest   :srcJsCompress
-					ext    :'.js'
+					ext    :'.min.js'
 					flatten:true
-				]
-			minJs     :
-				files:[
-					expand:true
-					cwd   :srcJsCompress
-					src   :'{**/,!**/}*.js'
-					dest  :destJs
-					ext   :".min.js"
 				]
 		bower   :
 			install:
@@ -156,9 +148,13 @@ module.exports = (grunt) ->
 				files:[
 					{ expand:true, cwd:srcCssmin, src:['*'], dest:destCss, flatten:true, filter:'isFile' }
 				]
-			scss2css:
+			scss2cssmin:
 				files:[
 					{ expand:true, cwd:scss2cssmin, src:['*'], dest:destCss, flatten:true, filter:'isFile' }
+				]
+			srcJsCompress:
+				files:[
+					{ expand:true, cwd:srcJsCompress, src:['*'], dest:destJs, flatten:true, filter:'isFile' }
 				]
 		connect :
 			options:
@@ -177,21 +173,23 @@ module.exports = (grunt) ->
 				]
 		newer   :
 			options:
-				cache:'newer/cache/'
+				cache:'newer/'
 		watch   :
+			###
 			options   :
 					dateFormat:
 						(time) ->
 							grunt.log.writeln('监视耗时 ' + time + '毫秒，在' + (new Date()).toString());
 							grunt.log.writeln('等待更多变化...');
 							return;
+            ###
 			scss2css  :
-				files:[srcScss + ' /{**/,!**/}*.scss']
+				files:[srcScss + ' /**/*.scss']
 				tasks:['newer:sass',
 					'newer:cssmin',
 					'newer:concat',
 					'newer:copy:cssmin',
-					'newer:copy:scss2css',]
+					'newer:copy:scss2cssmin']
 			srcJs  :
 				files:[srcJs + ' /{**/,!**/}*.js']
 				tasks:['newer:uglify:srcJs']
@@ -199,7 +197,7 @@ module.exports = (grunt) ->
 				files:[coffee2Js + ' /{**/,!**/}*.js']
 				tasks:['newer:uglify:coffee2Js']
 			imgmin    :
-				files  :[srcImg + '/**/**/**/**/*']
+				files  :[srcImg + '/**/*']
 				tasks  :['newer:imagemin']
 				options:
 					spawn:false
@@ -207,7 +205,7 @@ module.exports = (grunt) ->
 				options:
 					livereload:'<%=connect.options.livereload%>'
 				files  :[
-					'./' + dirs.srcDir + '/!*.html'
+					'./' + dirs.srcDir + '/*.html'
 					'./' + srcCss + '/{**!/,!**!/}*.css'
 					'./' + srcScss + '/{**!/,!**!/}*.scss'
 					'./' + srcJs + '/{**!/,!**!/}*.js'
@@ -301,23 +299,5 @@ module.exports = (grunt) ->
 		grunt.task.run(tasks)
 		grunt.config.set("requirejs", requireTask)
 	)
-
-	grunt.registerTask('all', ['newer:sass',
-		'newer:cssmin',
-		'newer:uglify',
-		'newer:concat',
-		'newer:copy',
-		'connect',
-		'watch']);
-
-	grunt.registerTask('sass', ['newer:sass',
-		'newer:cssmin',
-		'newer:concat:srcgruntCssmin',
-		'newer:copy:cssmin',
-		'watch:scss2css']);
-
-	grunt.registerTask('js', ['newer:jshint',
-		'newer:uglify',
-		'watch:js2minjs']);
-
+	grunt.registerTask( 'all',[ 'newer:sass','newer:cssmin','newer:uglify','newer:concat','newer:copy','connect','watch' ] );
 	return;
