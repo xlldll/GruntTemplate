@@ -25,6 +25,7 @@ module.exports = (grunt) ->
 		dirs.srcDir + '/js/jsCompress',
 		dirs.srcDir + '/img',
 		dirs.srcDir + '/fonts']
+	### 任务配置 ###
 	grunt.config.init(
 		pkg     :grunt.file.readJSON ( 'package.json' )
 		imagemin:
@@ -215,9 +216,9 @@ module.exports = (grunt) ->
 			cssFileN = fileN + '.css';
 			cssFileM = fileN + '.css.map';
 			cssFileMin = fileN + '.min.css';
-			cssFile = srcgruntCss + cssFileN;
-			cssMap = srcgruntCss + cssFileM;
-			cssMin = srcgruntCssmin + cssFileMin;
+			cssFile = myCss + cssFileN;
+			cssMap = myCss + cssFileM;
+			cssMin = myCssmin + cssFileMin;
 			if( grunt.file.exists(cssFile) )
 				grunt.file.delete(cssFile);
 				grunt.file.delete(cssMap);
@@ -287,4 +288,5 @@ module.exports = (grunt) ->
 	grunt.registerTask('js', ['newer:jshint',
 		'newer:uglify',
 		'watch:js2minjs']);
+
 	return;

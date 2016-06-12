@@ -27,6 +27,8 @@
     ref = [dirs.destDir + '/js', dirs.destDir + '/css', dirs.destDir + '/img', dirs.destDir + '/fonts'], destJs = ref[0], destCss = ref[1], destImg = ref[2], destFonts = ref[3];
     ref1 = [dirs.srcDir + '/scss', dirs.srcDir + '/css', dirs.srcDir + '/css/cssmin', dirs.srcDir + '/myCss', dirs.srcDir + '/myCss/cssmin'], srcScss = ref1[0], srcCss = ref1[1], srcCssmin = ref1[2], myCss = ref1[3], myCssmin = ref1[4];
     ref2 = [dirs.srcDir + '/js', dirs.srcDir + '/js/jsCompress', dirs.srcDir + '/img', dirs.srcDir + '/fonts'], srcJs = ref2[0], srcJsCompress = ref2[1], srcImg = ref2[2], srcFonts = ref2[3];
+
+    /* 任务配置 */
     grunt.config.init({
       pkg: grunt.file.readJSON('package.json'),
       imagemin: {
@@ -285,9 +287,9 @@
         cssFileN = fileN + '.css';
         cssFileM = fileN + '.css.map';
         cssFileMin = fileN + '.min.css';
-        cssFile = srcgruntCss + cssFileN;
-        cssMap = srcgruntCss + cssFileM;
-        cssMin = srcgruntCssmin + cssFileMin;
+        cssFile = myCss + cssFileN;
+        cssMap = myCss + cssFileM;
+        cssMin = myCssmin + cssFileMin;
         if (grunt.file.exists(cssFile)) {
           grunt.file["delete"](cssFile);
           grunt.file["delete"](cssMap);
