@@ -1,0 +1,27 @@
+{
+  "name": "hover-scss",
+  "description": "no",
+  "main": "index",
+  "authors": [
+    "Ian Lunn"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "no"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "no",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "jquery": "^2.2.3"
+  }
+}
