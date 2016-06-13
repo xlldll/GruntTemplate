@@ -1,0 +1,24 @@
+{
+  "requirejs": {
+    "main": {
+      "options": {
+        "baseUrl": "./",
+        "paths": {
+          "$": "src/js/jsCompress/a",
+          "_": "src/js/jsCompress/b",
+          "B": "src/js/jsCompress/c",
+          "Test": "src/js/jsCompress/test"
+        },
+        "web": {
+          "include": [
+            "$",
+            "_",
+            "B",
+            "Test"
+          ],
+          "out": "dest/js/libs.js"
+        }
+      }
+    }
+  }
+}

@@ -168,136 +168,19 @@ module.exports = (grunt) ->
 			server :
 				options:
 					open:true
-				base   :[
-					'./' + dirs.srcDir
-				]
+					base   :[
+						'./' + dirs.srcDir
+					]
 		newer   :
-			options:
-				cache:'newer/'
+			options:cache:'newer/'
 		watch   :
-			###
-			options   :
-					dateFormat:
-						(time) ->
-							grunt.log.writeln('监视耗时 ' + time + '毫秒，在' + (new Date()).toString());
-							grunt.log.writeln('等待更多变化...');
-							return;
-            ###
-			scss2css  :
-				files:[srcScss + ' /**/*.scss']
-				tasks:['newer:sass',
-					'newer:cssmin',
-					'newer:concat',
-					'newer:copy:cssmin',
-					'newer:copy:scss2cssmin']
-			srcJs  :
-				files:[srcJs + ' /{**/,!**/}*.js']
-				tasks:['newer:uglify:srcJs']
-			coffeeJs  :
-				files:[coffee2Js + ' /{**/,!**/}*.js']
-				tasks:['newer:uglify:coffee2Js']
 			imgmin    :
 				files  :[srcImg + '/**/*']
-				tasks  :['newer:imagemin']
-				options:
-					spawn:false
-			livereload:
-				options:
-					livereload:'<%=connect.options.livereload%>'
-				files  :[
-					'./' + dirs.srcDir + '/*.html'
-					'./' + srcCss + '/{**!/,!**!/}*.css'
-					'./' + srcScss + '/{**!/,!**!/}*.scss'
-					'./' + srcJs + '/{**!/,!**!/}*.js'
-					'./' + coffee2Js + '/{**!/,!**!/}*.js'
-					'./' + srcImg + '/{**!/,!**!/}*.{png,jpg}'
-				]
-		###
-		csscheck :
-		files : [ '<%= personDir %>/gruntCss/!*.css','<%= personDir %>/css/!*.css' ]
-		tasks : [ 'csslint' ]
-		options :
-			spawn : false
-		miniCss :
-		files : [ '<%= srcgruntCss %>/!*.css','<%= srcCss %>/!*.css' ]
-		tasks : [ 'cssmin' ]
-		options :
-			spawn : false
-		###
+				tasks  :['imagemin']
 	)
 	require('load-grunt-tasks')(grunt, {
 		pattern:['grunt-*',
 			'@*/grunt-*']
 	})
-
-	delFile = (deldir, files, srcdir) ->
-		file = files.substring(srcdir.length);
-		fileN = getFileName(files);
-		if( files.substr(-2) == 'js' )
-			minjsN = fileN + '.min.js';
-			jsF = srcdir + file;
-			minJs = deldir + minjsN;
-			if( grunt.file.exists(jsF) )
-				grunt.file.delete(jsF);
-				grunt.file.delete(minJs);
-				return false;
-		else if( files.substr(-4) == 'scss' )
-			cssFileN = fileN + '.css';
-			cssFileM = fileN + '.css.map';
-			cssFileMin = fileN + '.min.css';
-			cssFile = scss2css + cssFileN;
-			cssMap = scss2css + cssFileM;
-			cssMin = scss2cssmin + cssFileMin;
-			if( grunt.file.exists(cssFile) )
-				grunt.file.delete(cssFile);
-				grunt.file.delete(cssMap);
-				grunt.file.delete(cssMin);
-				return false;
-		else if( files.substr(-3) == 'png' )
-			pngFile = deldir + file;
-			if( grunt.file.exists(pngFile) )
-				grunt.file.delete(pngFile);
-				return false;
-
-	grunt.event.on('watch', (action, filepath, target) ->
-		grunt.log.writeln(filepath + '文件已经' + action + '并触发了' + target + '任务');
-		if( target == 'imgmin' )
-			if( action == 'deleted' || action == 'renamed' )
-				delFile(destImg, filepath, srcImg);
-				if( action == 'deleted' )
-					return false;
-		else if( target == 'scss2css' )
-			if( action == 'deleted' || action == 'renamed' )
-				delFile(scss2css, filepath, srcScss);
-				if( action == 'deleted' )
-					return false;
-		else if( target == 'js2minjs' )
-			if( action == 'deleted' || action == 'renamed' )
-				delFile(destJs, filepath, srcJsCompress);
-				if( action == 'deleted' )
-					return false;
-	)
-
-	grunt.registerTask('build', 'require demo', () ->
-		tasks = ['requirejs'];
-		srcDir = 'src';
-		destDir = 'dest';
-		grunt.config.set('config', {
-			srcDir :srcDir,
-			destDir:destDir
-		});
-		taskCfg = grunt.file.readJSON('requireJsCfg.json')
-		options = taskCfg.requirejs.main.options
-		platformCfg = options.web
-		includes = platformCfg.include
-		paths = options.paths
-		pos = -1
-		requireTask = taskCfg.requirejs
-		options.path    = paths
-		options.out     = platformCfg.out
-		options.include = includes
-		grunt.task.run(tasks)
-		grunt.config.set("requirejs", requireTask)
-	)
-	grunt.registerTask( 'all',[ 'newer:sass','newer:cssmin','newer:uglify','newer:concat','newer:copy','connect','watch' ] );
+	grunt.registerTask( 'we',['watch'] );
 	return;

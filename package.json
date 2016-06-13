@@ -35,7 +35,9 @@
     "grunt-contrib-uglify": "^1.0.1",
     "grunt-contrib-watch": "~0.5.3",
     "grunt-newer": "^1.2.0",
-    "load-grunt-configs": "^1.0.0",
     "load-grunt-tasks": "^3.5.0"
+  },
+  "devDependencies": {
+    "lodash": "^4.13.1"
   }
 }
