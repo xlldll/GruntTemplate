@@ -1,5 +1,4 @@
 {
-    // Possible Errors
     "duplicate-properties":true,
     "box-model":true,
     "display-property-grouping":true,
