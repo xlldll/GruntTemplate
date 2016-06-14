@@ -117,8 +117,6 @@
         coffee2Js: [coffee2Js + "/{**/,!**/}*.js"],
         Gruntfile: ["Gruntfile.js"]
       },
-
-      /* 压缩srcJs和coffee2Js中的js到srcJsCompress */
       uglify: {
         options: {
           stripBanners: true,
@@ -282,19 +280,6 @@
           files: ['./' + dirs.srcDir + '/!*.html', './' + srcCss + '/{**!/,!**!/}*.css', './' + srcScss + '/{**!/,!**!/}*.scss', './' + srcJs + '/{**!/,!**!/}*.js', './' + coffee2Js + '/{**!/,!**!/}*.js', './' + srcImg + '/{**!/,!**!/}*.{png,jpg}']
         }
       }
-
-      /*
-      		csscheck :
-      		files : [ '<%= personDir %>/gruntCss/!*.css','<%= personDir %>/css/!*.css' ]
-      		tasks : [ 'csslint' ]
-      		options :
-      			spawn : false
-      		miniCss :
-      		files : [ '<%= srcgruntCss %>/!*.css','<%= srcCss %>/!*.css' ]
-      		tasks : [ 'cssmin' ]
-      		options :
-      			spawn : false
-       */
     });
     require('load-grunt-tasks')(grunt, {
       pattern: ['grunt-*', '@*/grunt-*']

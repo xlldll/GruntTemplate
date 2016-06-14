@@ -1,14 +1,9 @@
-###
-  取得带后缀的文件名
-  通过\来分割文件路径，返回各个数组
-  取得最后一个数组
-###
+
 getFileName = (o) ->
 	url = o.split ( "\\" )
 	urll = url.length - 1
 	url[urll]
 module.exports = (grunt) ->
-	### 目录路径 ###
 	dirs =
 		destDir:'dest'
 		srcDir :'src'
@@ -28,7 +23,6 @@ module.exports = (grunt) ->
 	[coffeeJs, coffee2Js] = [dirs.srcDir + '/coffeeJs',
 		dirs.srcDir + '/coffee2Js']
 
-	### 任务配置 ###
 	grunt.config.init(
 		pkg     :grunt.file.readJSON ( 'package.json' )
 		imagemin:
@@ -80,7 +74,6 @@ module.exports = (grunt) ->
 					dest  :scss2cssmin
 					ext   :'.min.css'
 				]
-		### 合并scss2cssmin中的所有的css到srcCssmin，叫做scss2cssConcat ###
 		concat  :
 			options    :
 				separator   :'/*****************!CONCAT*******************/'
@@ -103,7 +96,6 @@ module.exports = (grunt) ->
 				jshintrc:".jshintrc.json"
 			coffee2Js       :[coffee2Js + "/{**/,!**/}*.js"]
 			Gruntfile:["Gruntfile.js"]
-		### 压缩srcJs和coffee2Js中的js到srcJsCompress ###
 		uglify  :
 			options   :
 				stripBanners:true
@@ -214,18 +206,6 @@ module.exports = (grunt) ->
 					'./' + coffee2Js + '/{**!/,!**!/}*.js'
 					'./' + srcImg + '/{**!/,!**!/}*.{png,jpg}'
 				]
-		###
-		csscheck :
-		files : [ '<%= personDir %>/gruntCss/!*.css','<%= personDir %>/css/!*.css' ]
-		tasks : [ 'csslint' ]
-		options :
-			spawn : false
-		miniCss :
-		files : [ '<%= srcgruntCss %>/!*.css','<%= srcCss %>/!*.css' ]
-		tasks : [ 'cssmin' ]
-		options :
-			spawn : false
-		###
 	)
 	require('load-grunt-tasks')(grunt, {
 		pattern:['grunt-*',
