@@ -1,37 +1,35 @@
-###
-  取得带后缀的文件名
-  通过\来分割文件路径，返回各个数组
-  取得最后一个数
-###
-getFileName = (o) ->
-	url = o.split ( "\\" )
-	urll = url.length - 1
-	url[urll]
+
 module.exports = (grunt) ->
-	### 目录路径 ###
+	### 开发目录与发布目录 ###
 	dirs =
 		destDir:'dest'
 		srcDir :'src'
-	[destJs, destCss,destImg,destFonts] = [dirs.destDir + '/js',
+	### 发布目录文件夹 ###
+	[destJs,destCss,destImg,destFonts] = [dirs.destDir + '/js',
 		dirs.destDir + '/css',
 		dirs.destDir + '/img',
 		dirs.destDir + '/fonts']
-	[srcScss, srcCss,srcCssmin,scss2css,scss2cssmin] = [dirs.srcDir + '/scss',
-		dirs.srcDir + '/css',
-		dirs.srcDir + '/css/cssmin',
-		dirs.srcDir + '/scss2css',
-		dirs.srcDir + '/scss2css/cssmin',]
-	[srcJs, srcJsCompress,srcImg,srcFonts] = [dirs.srcDir + '/js',
-		dirs.srcDir + '/js/jsCompress',
-		dirs.srcDir + '/img',
+	### 开发图片、格式 ###
+	[srcImg,srcImgMin,srcFonts] = [dirs.srcDir + '/img',
+		dirs.srcDir + '/imgMin',
 		dirs.srcDir + '/fonts']
-	[coffeeJs, coffee2Js] = [dirs.srcDir + '/coffeeJs',
-		dirs.srcDir + '/coffee2Js']
+	### 开发CSS ###
+	[srcCss, cssmin] = [dirs.srcDir + '/css',
+		dirs.srcDir + '/cssmin',]
+	### 开发SCSS ###
+	[scss, scssmin] = [dirs.srcDir + '/scss',
+		dirs.srcDir + '/scssmin',]
+	### 开发JS ###
+	[srcJs, jsmin] = [dirs.srcDir + '/js',
+		dirs.srcDir + '/jsmin']
+	### 开发CoffeeJs ###
+	[cfjs, cfjsmin] = [dirs.srcDir + '/cfjs',
+		dirs.srcDir + '/cfjsmin']
 
 	### 任务配置 ###
 	grunt.config.init(
 		pkg     :grunt.file.readJSON ( 'package.json' )
-		### 1.图片压缩和转移 ###
+		### 1.图片压缩到发布目录 ###
 		imagemin:
 			srcImg:
 				options:
@@ -42,20 +40,20 @@ module.exports = (grunt) ->
 					src   :['**/*.{png,jpg,jpeg,gif}']
 					dest  :destImg
 				]
-		### 2.scss编译 ###
+		### 2.SCSS本地编译 ###
 		sass    :
-			srcScss:
+			scss:
 				options:
 					style:'expanded'
 				files  :[
 					expand :true
-					cwd    :srcScss
+					cwd    :scss
 					src    :['**/*.scss']
-					dest   :scss2css
+					dest   :scss
 					ext    :'.css'
-					flatten:true
+					flatten:false
 				]
-		### 3.检查css  ###
+		### 3.CSS格式检查  ###
 		csslint :
 			scss2css:
 				options :
@@ -63,62 +61,61 @@ module.exports = (grunt) ->
 				checkCss:
 					options:
 						import:2
-					src    :[scss2css+'/*.css']
-		### 4.压缩css  ###
+					src    :[scss+'**/*.css']
+		### 4.CSS本地压缩  ###
 		cssmin  :
 			css:
 				files:[
 					expand:true
 					cwd   :srcCss
-					src   :['*.css',
-						'!**/*.min.css']
-					dest  :srcCssmin
-					ext   :'.min.css'
+					src   :['**/*.css']
+					dest  :cssmin
+					ext   :'.css'
 				]
-			scss2css :
+			scss:
 				files:[
 					expand:true
-					cwd   :scss2css
-					src   :['*.css',
-						'!**/*.map']
-					dest  :scss2cssmin
-					ext   :'.min.css'
+					cwd   :scss
+					src   :['**/*.css','!**/*.map']
+					dest  :scssmin
+					ext   :'.css'
 				]
-			cssimport :
-				files:[
-					expand:true
-					cwd   :srcCss
-					src   :['*.css',
-						srcCssmin+'!*.min.css']
-					dest  :srcCssmin
-					ext   :'.min.css'
-				]
-		### 5.合并scss2cssmin中的所有的css到srcCssmin，叫做scss2cssConcat ###
+		### 5.合并压缩的CSS以及JS到发布目录 ###
 		concat  :
 			options    :
 				separator   :'/*****************!CONCAT*******************/'
 				stripBanners:true
 				banner      :'/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
 					'<%= grunt.template.today("yyyy-mm-dd") %> */\n'
-			scss2cssConcat:
-				src :[scss2cssmin + '/*.css']
-				dest:srcCssmin + '/scss2cssConcat.min.css'
-		### 6.coffeeJs编译  ###
+			cssCat:
+				src :[cssmin + '/**/*.css']
+				dest:destCss + '/srcAllCss.min.css'
+			scssCat:
+				src :[scssmin + '/**/*.css']
+				dest:destCss + '/srcAllScss.min.css'
+			jsCat:
+				src :[jsmin + '/**/*.js']
+				dest:destJs + '/srcAllJs.min.js'
+			cfjsCat:
+				src :[cfjsmin + '/**/*.js']
+				dest:destJs + '/cfAllJs.min.js'
+		### 6.cfjs本地编译  ###
+		### 注意src的斜杠格式 ###
 		coffee:
-			coffeeJs:
+			cfJs:
 				expand: true
-				flatten: true
-				cwd: coffeeJs
-				src: ['*.coffee']
-				dest: coffee2Js
+				flatten: false
+				cwd: cfjs
+				src: ['{,**/}*.coffee']
+				dest: cfjs
 				ext: '.js'
 		### 7.JS检查  ###
 		jshint  :
 			options  :
 				jshintrc:".jshintrc.json"
-			coffee2Js       :[coffee2Js + "/{**/,!**/}*.js"]
+			coffee2Js:[cfjs + "{,**/}*.js"]
 			Gruntfile:["Gruntfile.js"]
-		### 8.压缩srcJs和coffee2Js中的js到srcJsCompress ###
+		### 8.JS压缩 ###
 		uglify  :
 			options   :
 				stripBanners:true
@@ -128,21 +125,21 @@ module.exports = (grunt) ->
 				files:[
 					expand :true
 					cwd    :srcJs,
-					src    :'{**/,!**/}*.js'
-					dest   :srcJsCompress
-					ext    :'.min.js'
-					flatten:true
+					src    :'{,**/}*.js'
+					dest   :jsmin
+					ext    :'.js'
+					flatten:false
 				]
-			coffee2Js:
+			cfJs:
 				files:[
 					expand :true
-					cwd    :coffee2Js,
-					src    :'{**/,!**/}*.js'
-					dest   :srcJsCompress
-					ext    :'.min.js'
-					flatten:true
+					cwd    :cfjs,
+					src    :'{,**/}*.js'
+					dest   :cfjsmin
+					ext    :'.js'
+					flatten:false
 				]
-		### 9.bower管理引入文件  ###
+		### 9.Bower管理引入文件  ###
 		bower   :
 			install:
 				options:
@@ -158,18 +155,9 @@ module.exports = (grunt) ->
 			### html、字体 ###
 			main  :
 				files:[
-					{ expand:true, cwd:srcFonts, src:['*'], dest:destFonts, flatten:true, filter:'isFile' }
 					{ expand:true, cwd:dirs.srcDir, src:['*.html'], dest:dirs.destDir, flatten:true, filter:'isFile' }
 				]
-			cssmin:
-				files:[
-					{ expand:true, cwd:srcCssmin, src:['*'], dest:destCss, flatten:true, filter:'isFile' }
-				]
-			srcJsCompress:
-				files:[
-					{ expand:true, cwd:srcJsCompress, src:['*'], dest:destJs, flatten:true, filter:'isFile' }
-				]
-		### 10.建立网站连接  ###
+		### 11.建立网站连接  ###
 		connect :
 			options:
 				open      :
@@ -185,10 +173,55 @@ module.exports = (grunt) ->
 					base   :[
 						'./' + dirs.srcDir
 					]
-		### 11.文件历史缓存  ###
+		### 12.文件历史缓存  ###
 		newer   :
 			options:cache:'newer/'
-		### 12.监视  ###
+		### 13.同步开发文件的删除添加重命名 ###
+		sync      :
+			imgs:
+				files: [
+					{ cwd: srcImg, src: ['**'], dest: destImg }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
+			fonts:
+				files: [
+					{ cwd: srcFonts, src: ['**'], dest: destFonts }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
+			css:
+				files: [
+					{ cwd: srcCss, src: ['{,**/}*.css'], dest: cssmin }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
+			scss:
+				files: [
+					{ cwd: scss, src: ['{,**/}*.css'], dest: scssmin }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
+			srcJs:
+				files: [
+					{ cwd: srcJs, src: ['{,**/}*.js'], dest: jsmin }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
+			cfJs:
+				files: [
+					{ cwd: cfjs, src: ['{,**/}*.js','!{,**/}*.coffee'], dest: cfjsmin }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
+
+		### 14.监视变动  ###
 		watch   :
 			options   :dateFormat:(time) ->
 						grunt.log.writeln('监视耗时 ' + time + '毫秒' + (new Date()).toString());
@@ -198,47 +231,51 @@ module.exports = (grunt) ->
 			configFiles:
 				files: [ 'Gruntfile.js' ]
 				options:reload: true
-			### 2.个人scss ###
-			scss2css  :
-				files:[srcScss + '/**/*.scss']
-				tasks:['newer:sass',
-					'newer:cssmin:scss2css',
-					'newer:concat:scss2cssConcat',
-					'newer:copy:cssmin']
-			### 3.外部引入css ###
-			importCss  :
-				files:[srcCss + '/{,**/}*.css',srcCssmin + ' /!*.min.css']
+			### 2.公共CSS ###
+			css :
+				files:[srcCss + '/{,**/}*.css']
 				tasks:[
-					'newer:cssmin:cssimport',
-					'newer:copy:cssmin']
-			### 4.外部引入js ###
-			sourceJs  :
+					'newer:cssmin:css',
+					'sync:css',
+					'concat:cssCat']
+			### 3.个人SCSSs ###
+			scss  :
+				files:[scss + '/{,**/}*.scss',scss + '/{,**/}*.css']
+				tasks:['newer:sass:scss',
+					'newer:cssmin:scss',
+					'sync:scss',
+					'concat:scssCat']
+			### 4.公共JS ###
+			srcJs  :
 				files:[srcJs + '/{,**/}*.js']
-				tasks:['newer:uglify:srcJs','newer:copy:srcJsCompress']
-			### 5.个人js ###
-			cfeJs  :
-				files:[coffeeJs + '/{,**/}*.coffee']
-				tasks:['newer:coffee:coffeeJs','newer:uglify:coffee2Js','newer:copy:srcJsCompress']
+				tasks:['newer:uglify:srcJs','sync:srcJs','concat:jsCat']
+			### 5.个人JS ###
+			cfJs     :
+				files:[cfjs + '/{,**/}*.coffee',cfjs + '/{,**/}*.js']
+				tasks:['newer:coffee:cfJs','newer:uglify:cfJs','sync:cfJs','concat:cfjsCat']
 			### 6.图片压缩 ###
 			imgmin    :
-				files  :[srcImg + '/**/*']
-				tasks  :['newer:imagemin']
-			### 7.实时修改 ###
+				files  :[srcImg + '/{,**/}*']
+				tasks  :['newer:imagemin','sync:imgs']
+			### 7.格式文件 ###
+			fonts    :
+				files  :[srcFonts + '/{,**/}*']
+				tasks  :['sync:fonts']
+			### 8.实时修改 ###
 			livereload:
 				options:
 					livereload:'<%=connect.options.livereload%>'
 				files  :[
 					'./' + dirs.srcDir + '/*.html',
-					'./' + srcCssmin + '/{,**/}*.min.css',
+					'./' + srcCss + '/{,**/}*.css',
 					'./' + srcJs + '/{,**/}*.js',
-					'./' + coffee2Js + '/{,**/}*.js',
+					'./' + cfjs + '/{,**/}*.js',
 					'./' + srcImg + '/{,**/}*.{png,jpg}'
 				]
-			### 8.转移其他文件###
+			### 9.HTML文件 ###
 			copyFile  :
-				files:[srcFonts + '/*',dirs.srcDir+'/*.html']
+				files:[dirs.srcDir+'/*.html']
 				tasks:['newer:copy:main']
-
 			###
 			csscheck :
 			files : [ '<%= personDir %>/gruntCss/!*.css','<%= personDir %>/css/!*.css' ]
@@ -258,74 +295,12 @@ module.exports = (grunt) ->
 			'@*/grunt-*']
 	})
 
-	delFile = (deldir, files, srcdir) ->
-		file = files.substring(srcdir.length);
-		fileN = getFileName(files);
-		if( files.substr(-2) == 'js' )
-			minjsN = fileN + '.min.js';
-			jsF = srcdir + file;
-			minJs = deldir + minjsN;
-			if( grunt.file.exists(jsF) )
-				grunt.file.delete(jsF);
-				grunt.file.delete(minJs);
-				return false;
-		else if( files.substr(-4) == 'scss' )
-			cssFileN = fileN + '.css';
-			cssFileM = fileN + '.css.map';
-			cssFileMin = fileN + '.min.css';
-			cssFile = scss2css + cssFileN;
-			cssMap = scss2css + cssFileM;
-			cssMin = scss2cssmin + cssFileMin;
-			if( grunt.file.exists(cssFile) )
-				grunt.file.delete(cssFile);
-				grunt.file.delete(cssMap);
-				grunt.file.delete(cssMin);
-				return false;
-		else if( files.substr(-3) == 'png' )
-			pngFile = deldir + file;
-			if( grunt.file.exists(pngFile) )
-				grunt.file.delete(pngFile);
-				return false;
-
-	grunt.event.on('watch', (action, filepath, target) ->
-		grunt.log.writeln(filepath + '文件已经' + action + '并触发了' + target + '任务');
-		if( target == 'imgmin' )
-			if( action == 'deleted' || action == 'renamed' )
-				delFile(destImg, filepath, srcImg);
-				if( action == 'deleted' )
-					return false;
-		else if( target == 'scss2css' )
-			if( action == 'deleted' || action == 'renamed' )
-				delFile(scss2css, filepath, srcScss);
-				if( action == 'deleted' )
-					return false;
-		else if( target == 'js2minjs' )
-			if( action == 'deleted' || action == 'renamed' )
-				delFile(destJs, filepath, srcJsCompress);
-				if( action == 'deleted' )
-					return false;
-	)
-
-	grunt.registerTask('build', 'require demo', () ->
-		tasks = ['requirejs'];
-		srcDir = 'src';
-		destDir = 'dest';
-		grunt.config.set('config', {
-			srcDir :srcDir,
-			destDir:destDir
-		});
-		taskCfg = grunt.file.readJSON('requireJsCfg.json')
-		options = taskCfg.requirejs.main.options
-		platformCfg = options.web
-		includes = platformCfg.include
-		paths = options.paths
-		pos = -1
-		requireTask = taskCfg.requirejs
-		options.path    = paths
-		options.out     = platformCfg.out
-		options.include = includes
-		grunt.task.run(tasks)
-		grunt.config.set("requirejs", requireTask)
-	)
+	### 所有 ###
 	grunt.registerTask('all',[ 'newer:sass','newer:cssmin','newer:coffee','newer:uglify','newer:concat','newer:copy','connect','watch' ]);
+	### 图片 ###
+	grunt.registerTask('img', [ 'imagemin']);
+	### JS ###
+	grunt.registerTask('jsss', [ 'newer:coffee','newer:uglify','watch']);
+	### CSS ###
+	grunt.registerTask('csss', [ 'newer:sass','newer:cssmin','watch']);
 	return;

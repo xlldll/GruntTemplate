@@ -20,7 +20,7 @@ module.exports = (grunt) ->
 		dirs.srcDir + '/js/jsCompress',
 		dirs.srcDir + '/img',
 		dirs.srcDir + '/fonts']
-	[coffeeJs, coffee2Js] = [dirs.srcDir + '/coffeeJs',
+	[cfjs, coffee2Js] = [dirs.srcDir + '/cfjs',
 		dirs.srcDir + '/coffee2Js']
 
 	grunt.config.init(
@@ -84,10 +84,10 @@ module.exports = (grunt) ->
 				src :[scss2cssmin + '/*.css']
 				dest:srcCssmin + '/scss2cssConcat.min.css'
 		coffee:
-			coffeeJs:
+			cfjs:
 				expand: true
 				flatten: true
-				cwd: coffeeJs
+				cwd: cfjs
 				src: ['*.coffee']
 				dest: coffee2Js
 				ext: '.js'
@@ -187,7 +187,7 @@ module.exports = (grunt) ->
 			srcJs  :
 				files:[srcJs + ' /{**/,!**/}*.js']
 				tasks:['newer:uglify:srcJs']
-			coffeeJs  :
+			cfjs  :
 				files:[coffee2Js + ' /{**/,!**/}*.js']
 				tasks:['newer:uglify:coffee2Js']
 			imgmin    :
