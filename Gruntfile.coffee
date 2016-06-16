@@ -93,7 +93,7 @@ module.exports = (grunt) ->
 					dest  :scssmin
 					ext   :'.css'
 				]
-		### 5.合并压缩的CSS以及JS到发布目录 ###
+		### 5.单纯拼接合并CSS以及JS到发布目录，并没有压缩处理效果 ###
 		concat  :
 			options    :
 				separator   :'/*****************!CONCAT*******************/'
@@ -106,12 +106,6 @@ module.exports = (grunt) ->
 			scssCat:
 				src :[scssmin + '/**/*.css']
 				dest:destCss + '/srcAllScss.min.css'
-			jsCat:
-				src :[jsmin + '/**/*.js']
-				dest:destJs + '/srcAllJs.min.js'
-			cfjsCat:
-				src :[cfjsmin + '/**/*.js']
-				dest:destJs + '/cfAllJs.min.js'
 		### 6.cfjs本地编译  ###
 		### 注意src的斜杠格式 ###
 		coffee:
@@ -152,6 +146,14 @@ module.exports = (grunt) ->
 					ext    :'.js'
 					flatten:false
 				]
+		### 8.JS合并兼压缩 ###
+		requirejs:
+			compile:
+				options:
+					baseUrl: "./"
+					include: [ "src/main.js" ]
+					out: "path/to/optimized.js"
+
 		### 9.Bower管理引入文件  ###
 		bower   :
 			install:
@@ -307,9 +309,6 @@ module.exports = (grunt) ->
 	grunt.registerTask('jsss', [ 'newer:coffee','newer:uglify','watch']);
 	### CSS ###
 	grunt.registerTask('csss', [ 'newer:sass','newer:cssmin','watch']);
-
-
-
 	### 检查格式 ###
 	grunt.registerTask('chkCSS', [ 'csslint']);
 	grunt.registerTask('chkJS', [ 'jshint']);
@@ -319,5 +318,21 @@ module.exports = (grunt) ->
 	grunt.registerTask('minify', [ 'imagemin','cssmin','uglify','htmlmin']);
 	### 文件合并 ###
 	grunt.registerTask('cat', [ 'concat']);
+
+	### 自定义任务 ###
+	grunt.registerTask('reqJs', 'requireJS', () ->
+		taskCfg = grunt.file.readJSON('rjsGrunt.json')
+		requireTask = taskCfg.requirejs
+		options = requireTask.main.options
+		platformCfg = options.web
+		options.include = platformCfg.include
+		options.name = platformCfg.name
+		options.out = platformCfg.out
+		options.paths = options.paths
+		options.mainConfigFile = options.mainConfigFile
+		grunt.config.set("requirejs", requireTask)
+		tasks = ['requirejs'];
+		grunt.task.run(tasks)
+	)
 
 	return;

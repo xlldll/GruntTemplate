@@ -1,0 +1,26 @@
+{
+	"requirejs": {
+		"main": {
+			"options": {
+				"baseUrl": "./src/js",
+				"paths": {
+					"requireLib": "vendors/requirejs/require",
+					"knockout": "vendors/knockout/knockout-3.0.0",
+					"main-call": "viewmodels/main_call",
+					"main-viewmodel": "viewmodels/main_viewmodel"
+				},
+				"mainConfigFile": "src/js/rjsCfg.js",
+				"web": {
+					"name": "entrance",
+					"include": [
+						"requireLib",
+						"knockout",
+						"main-call",
+						"main-viewmodel"
+					],
+					"out": "dest/js/optimized.js"
+				}
+			}
+		}
+	}
+}
