@@ -3,17 +3,17 @@
   module.exports = function(grunt) {
 
     /* 开发目录与发布目录 */
-    var cfjs, cfjsmin, cssmin, destCss, destFonts, destImg, destJs, dirs, jsmin, ref, ref1, ref2, ref3, ref4, ref5, scss, scssmin, srcCss, srcFonts, srcImg, srcImgMin, srcJs;
+    var cfjs, cfjsmin, cssmin, destCss, destFonts, destHtml, destImg, destJs, dirs, jsmin, ref, ref1, ref2, ref3, ref4, ref5, scss, scssmin, srcCss, srcFonts, srcHtml, srcImg, srcImgMin, srcJs;
     dirs = {
       destDir: 'dest',
       srcDir: 'src'
     };
 
     /* 发布目录文件夹 */
-    ref = [dirs.destDir + '/js', dirs.destDir + '/css', dirs.destDir + '/img', dirs.destDir + '/fonts'], destJs = ref[0], destCss = ref[1], destImg = ref[2], destFonts = ref[3];
+    ref = [dirs.destDir + '/html', dirs.destDir + '/js', dirs.destDir + '/css', dirs.destDir + '/img', dirs.destDir + '/fonts'], destHtml = ref[0], destJs = ref[1], destCss = ref[2], destImg = ref[3], destFonts = ref[4];
 
-    /* 开发图片、格式 */
-    ref1 = [dirs.srcDir + '/img', dirs.srcDir + '/imgMin', dirs.srcDir + '/fonts'], srcImg = ref1[0], srcImgMin = ref1[1], srcFonts = ref1[2];
+    /* 开发主页、图片、格式 */
+    ref1 = [dirs.srcDir + '/html', dirs.srcDir + '/img', dirs.srcDir + '/imgMin', dirs.srcDir + '/fonts'], srcHtml = ref1[0], srcImg = ref1[1], srcImgMin = ref1[2], srcFonts = ref1[3];
 
     /* 开发CSS */
     ref2 = [dirs.srcDir + '/css', dirs.srcDir + '/cssmin'], srcCss = ref2[0], cssmin = ref2[1];
@@ -47,6 +47,22 @@
           ]
         }
       },
+      htmlmin: {
+        html: {
+          options: {
+            removeComments: true,
+            collapseWhitespace: true
+          },
+          files: [
+            {
+              expand: true,
+              cwd: srcHtml,
+              src: ['**/*.html'],
+              dest: destHtml
+            }
+          ]
+        }
+      },
 
       /* 2.SCSS本地编译 */
       sass: {
@@ -69,7 +85,7 @@
 
       /* 3.CSS格式检查 */
       csslint: {
-        scss2css: {
+        css: {
           options: {
             csslintrc: '.csslintrc.json'
           },
@@ -77,7 +93,7 @@
             options: {
               "import": 2
             },
-            src: [scss + '**/*.css']
+            src: [scss + '*{,**/}*.css', srcCss + '{,**/}*.css']
           }
         }
       },
@@ -237,7 +253,7 @@
         server: {
           options: {
             open: true,
-            base: ['./' + dirs.srcDir]
+            base: ['./' + srcHtml]
           }
         }
       },
@@ -251,6 +267,18 @@
 
       /* 13.同步开发文件的删除添加重命名 */
       sync: {
+        htmls: {
+          files: [
+            {
+              cwd: srcHtml,
+              src: ['{,**/}*.html'],
+              dest: destHtml
+            }
+          ],
+          pretend: false,
+          verbose: true,
+          updateAndDelete: true
+        },
         imgs: {
           files: [
             {
@@ -371,6 +399,10 @@
           files: [srcImg + '/{,**/}*'],
           tasks: ['newer:imagemin', 'sync:imgs']
         },
+        htmlmin: {
+          files: [srcHtml + '/{,**/}*'],
+          tasks: ['newer:htmlmin', 'sync:htmls']
+        },
 
         /* 7.格式文件 */
         fonts: {
@@ -383,27 +415,8 @@
           options: {
             livereload: '<%=connect.options.livereload%>'
           },
-          files: ['./' + dirs.srcDir + '/*.html', './' + srcCss + '/{,**/}*.css', './' + srcJs + '/{,**/}*.js', './' + cfjs + '/{,**/}*.js', './' + srcImg + '/{,**/}*.{png,jpg}']
-        },
-
-        /* 9.HTML文件 */
-        copyFile: {
-          files: [dirs.srcDir + '/*.html'],
-          tasks: ['newer:copy:main']
+          files: ['./' + srcHtml + '/{,**/}*.html', './' + srcCss + '/{,**/}*.css', './' + srcJs + '/{,**/}*.js', './' + cfjs + '/{,**/}*.js', './' + srcImg + '/{,**/}*.{png,jpg}']
         }
-
-        /*
-        			csscheck :
-        			files : [ '<%= personDir %>/gruntCss/!*.css','<%= personDir %>/css/!*.css' ]
-        			tasks : [ 'csslint' ]
-        			options :
-        				spawn : false
-        			miniCss :
-        			files : [ '<%= srcgruntCss %>/!*.css','<%= srcCss %>/!*.css' ]
-        			tasks : [ 'cssmin' ]
-        			options :
-        				spawn : false
-         */
       }
     });
     require('load-grunt-tasks')(grunt, {
@@ -413,14 +426,24 @@
     /* 所有 */
     grunt.registerTask('all', ['newer:sass', 'newer:cssmin', 'newer:coffee', 'newer:uglify', 'newer:concat', 'newer:copy', 'connect', 'watch']);
 
-    /* 图片 */
-    grunt.registerTask('img', ['imagemin']);
-
     /* JS */
     grunt.registerTask('jsss', ['newer:coffee', 'newer:uglify', 'watch']);
 
     /* CSS */
     grunt.registerTask('csss', ['newer:sass', 'newer:cssmin', 'watch']);
+
+    /* 检查格式 */
+    grunt.registerTask('chkCSS', ['csslint']);
+    grunt.registerTask('chkJS', ['jshint']);
+
+    /* 实时修改 */
+    grunt.registerTask('live', ['connect', 'watch']);
+
+    /* 文件压缩 */
+    grunt.registerTask('minify', ['imagemin', 'cssmin', 'uglify', 'htmlmin']);
+
+    /* 文件合并 */
+    grunt.registerTask('cat', ['concat']);
   };
 
 }).call(this);

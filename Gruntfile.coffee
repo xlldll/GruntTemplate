@@ -5,12 +5,14 @@ module.exports = (grunt) ->
 		destDir:'dest'
 		srcDir :'src'
 	### 发布目录文件夹 ###
-	[destJs,destCss,destImg,destFonts] = [dirs.destDir + '/js',
+	[destHtml,destJs,destCss,destImg,destFonts] = [dirs.destDir + '/html',
+		dirs.destDir + '/js',
 		dirs.destDir + '/css',
 		dirs.destDir + '/img',
 		dirs.destDir + '/fonts']
-	### 开发图片、格式 ###
-	[srcImg,srcImgMin,srcFonts] = [dirs.srcDir + '/img',
+	### 开发主页、图片、格式 ###
+	[srcHtml,srcImg,srcImgMin,srcFonts] = [dirs.srcDir + '/html',
+		dirs.srcDir + '/img',
 		dirs.srcDir + '/imgMin',
 		dirs.srcDir + '/fonts']
 	### 开发CSS ###
@@ -40,6 +42,17 @@ module.exports = (grunt) ->
 					src   :['**/*.{png,jpg,jpeg,gif}']
 					dest  :destImg
 				]
+		htmlmin:
+			html:
+				options:
+					removeComments: true
+					collapseWhitespace: true
+				files:[
+					expand:true
+					cwd   :srcHtml
+					src   :['**/*.html']
+					dest  :destHtml
+				]
 		### 2.SCSS本地编译 ###
 		sass    :
 			scss:
@@ -55,13 +68,13 @@ module.exports = (grunt) ->
 				]
 		### 3.CSS格式检查  ###
 		csslint :
-			scss2css:
+			css:
 				options :
 					csslintrc:'.csslintrc.json'
 				checkCss:
 					options:
 						import:2
-					src    :[scss+'**/*.css']
+					src    :[scss+'*{,**/}*.css',srcCss+'{,**/}*.css']
 		### 4.CSS本地压缩  ###
 		cssmin  :
 			css:
@@ -171,13 +184,20 @@ module.exports = (grunt) ->
 				options:
 					open:true
 					base   :[
-						'./' + dirs.srcDir
+						'./' + srcHtml
 					]
 		### 12.文件历史缓存  ###
 		newer   :
 			options:cache:'newer/'
 		### 13.同步开发文件的删除添加重命名 ###
 		sync      :
+			htmls:
+				files: [
+					{ cwd: srcHtml, src: ['{,**/}*.html'], dest: destHtml }
+				]
+				pretend: false
+				verbose: true
+				updateAndDelete: true
 			imgs:
 				files: [
 					{ cwd: srcImg, src: ['**'], dest: destImg }
@@ -257,6 +277,9 @@ module.exports = (grunt) ->
 			imgmin    :
 				files  :[srcImg + '/{,**/}*']
 				tasks  :['newer:imagemin','sync:imgs']
+			htmlmin    :
+				files  :[srcHtml + '/{,**/}*']
+				tasks  :['newer:htmlmin','sync:htmls']
 			### 7.格式文件 ###
 			fonts    :
 				files  :[srcFonts + '/{,**/}*']
@@ -266,29 +289,12 @@ module.exports = (grunt) ->
 				options:
 					livereload:'<%=connect.options.livereload%>'
 				files  :[
-					'./' + dirs.srcDir + '/*.html',
+					'./' + srcHtml + '/{,**/}*.html',
 					'./' + srcCss + '/{,**/}*.css',
 					'./' + srcJs + '/{,**/}*.js',
 					'./' + cfjs + '/{,**/}*.js',
 					'./' + srcImg + '/{,**/}*.{png,jpg}'
 				]
-			### 9.HTML文件 ###
-			copyFile  :
-				files:[dirs.srcDir+'/*.html']
-				tasks:['newer:copy:main']
-			###
-			csscheck :
-			files : [ '<%= personDir %>/gruntCss/!*.css','<%= personDir %>/css/!*.css' ]
-			tasks : [ 'csslint' ]
-			options :
-				spawn : false
-			miniCss :
-			files : [ '<%= srcgruntCss %>/!*.css','<%= srcCss %>/!*.css' ]
-			tasks : [ 'cssmin' ]
-			options :
-				spawn : false
-			###
-
 	)
 	require('load-grunt-tasks')(grunt, {
 		pattern:['grunt-*',
@@ -297,10 +303,21 @@ module.exports = (grunt) ->
 
 	### 所有 ###
 	grunt.registerTask('all',[ 'newer:sass','newer:cssmin','newer:coffee','newer:uglify','newer:concat','newer:copy','connect','watch' ]);
-	### 图片 ###
-	grunt.registerTask('img', [ 'imagemin']);
 	### JS ###
 	grunt.registerTask('jsss', [ 'newer:coffee','newer:uglify','watch']);
 	### CSS ###
 	grunt.registerTask('csss', [ 'newer:sass','newer:cssmin','watch']);
+
+
+
+	### 检查格式 ###
+	grunt.registerTask('chkCSS', [ 'csslint']);
+	grunt.registerTask('chkJS', [ 'jshint']);
+	### 实时修改 ###
+	grunt.registerTask('live', [ 'connect','watch']);
+	### 文件压缩 ###
+	grunt.registerTask('minify', [ 'imagemin','cssmin','uglify','htmlmin']);
+	### 文件合并 ###
+	grunt.registerTask('cat', [ 'concat']);
+
 	return;
