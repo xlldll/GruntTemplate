@@ -1,16 +1,12 @@
 {
-  "name": "hover-scss",
+  "name": "bowerjson",
   "description": "no",
-  "main": "index",
   "authors": [
-    "Ian Lunn"
+    "linchuqiang"
   ],
   "license": "MIT",
   "keywords": [
     "no"
-  ],
-  "moduleType": [
-    "node"
   ],
   "homepage": "no",
   "ignore": [
@@ -20,8 +16,11 @@
     "test",
     "tests"
   ],
-  "dependencies": {},
-  "devDependencies": {
-    "jquery": "^2.2.3"
-  }
+  "dependencies": {
+    "requirejs": "^2.2.0",
+    "knockout": "^3.4.0",
+    "bootstrap-sass": "*"
+  },
+  "devDependencies": {},
+  "exportsOverride": {}
 }

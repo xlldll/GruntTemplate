@@ -1,0 +1,39 @@
+{
+	"requirejs": {
+		"main": {
+			"options": {
+				"baseUrl": "./src/rjs",
+				"paths": {
+					"requireLib": "vendors/requirejs/require",
+					"knockout": "vendors/knockout/knockout-3.0.0",
+					"main-call": "viewmodels/main_call",
+					"main-viewmodel": "viewmodels/main_viewmodel",
+					"jqform":  "jqPlugins/jquery.form",
+					"jqvalidate":  "jqPlugins/jquery.validate",
+					"jqMigrate":  "jqPlugins/jquery-migrate-1.2.1"
+				},
+				"mainConfigFile": "src/rjs/rjsCfg.js",
+				"web": {
+					"name": "entrance",
+					"include": [
+						"requireLib",
+						"knockout",
+						"main-call",
+						"main-viewmodel"
+					],
+					"out": "dest/rjs/web.js"
+				},
+				"jquery": {
+					"name": "jquery",
+					"include": [
+						"jquery",
+						"jqform",
+						"jqvalidate",
+						"jqMigrate"
+					],
+					"out": "dest/rjs/jquery.js"
+				}
+			}
+		}
+	}
+}

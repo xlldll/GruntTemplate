@@ -3,7 +3,7 @@
   module.exports = function(grunt) {
 
     /* 开发目录与发布目录 */
-    var cfjs, cfjsmin, cssmin, destCss, destFonts, destHtml, destImg, destJs, dirs, jsmin, ref, ref1, ref2, ref3, ref4, ref5, scss, scssmin, srcCss, srcFonts, srcHtml, srcImg, srcImgMin, srcJs;
+    var bower, cssmin, destCss, destFonts, destHtml, destImg, destJs, dirs, js2Min, js2MinSync, js2Mult, js2MultSync, jsRequire, ref, ref1, ref2, ref3, ref4, ref5, ref6, scss, scssmin, srcCss, srcFonts, srcHtml, srcImg, srcImgMin;
     dirs = {
       destDir: 'dest',
       srcDir: 'src'
@@ -21,11 +21,14 @@
     /* 开发SCSS */
     ref3 = [dirs.srcDir + '/scss', dirs.srcDir + '/scssmin'], scss = ref3[0], scssmin = ref3[1];
 
-    /* 开发JS */
-    ref4 = [dirs.srcDir + '/js', dirs.srcDir + '/jsmin'], srcJs = ref4[0], jsmin = ref4[1];
+    /* 一一按目录压缩JS */
+    ref4 = [dirs.srcDir + '/bower', dirs.srcDir + '/jsRequire'], bower = ref4[0], jsRequire = ref4[1];
 
-    /* 开发CoffeeJs */
-    ref5 = [dirs.srcDir + '/cfjs', dirs.srcDir + '/cfjsmin'], cfjs = ref5[0], cfjsmin = ref5[1];
+    /* 一一按目录压缩JS */
+    ref5 = [dirs.srcDir + '/js2Min', dirs.srcDir + '/js2MinSync'], js2Min = ref5[0], js2MinSync = ref5[1];
+
+    /* 多合一Js */
+    ref6 = [dirs.srcDir + '/js2Mult', dirs.srcDir + '/js2MultSync'], js2Mult = ref6[0], js2MultSync = ref6[1];
 
     /* 任务配置 */
     grunt.config.init({
@@ -141,16 +144,24 @@
         }
       },
 
-      /* 6.cfjs本地编译 */
+      /* 6.js2Mult本地编译 */
 
       /* 注意src的斜杠格式 */
       coffee: {
-        cfJs: {
+        js2Min: {
           expand: true,
           flatten: false,
-          cwd: cfjs,
+          cwd: js2Min,
           src: ['{,**/}*.coffee'],
-          dest: cfjs,
+          dest: js2Min,
+          ext: '.js'
+        },
+        js2Mult: {
+          expand: true,
+          flatten: false,
+          cwd: js2Mult,
+          src: ['{,**/}*.coffee'],
+          dest: js2Mult,
           ext: '.js'
         }
       },
@@ -158,52 +169,77 @@
       /* 7.JS检查 */
       jshint: {
         options: {
-          jshintrc: ".jshintrc.json"
+          jshintrc: '.jshintrc.json'
         },
-        coffee2Js: [cfjs + "{,**/}*.js"],
-        Gruntfile: ["Gruntfile.js"]
+        coffee2Js: [js2Min + '{,**/}*.js', js2Mult + '{,**/}*.js'],
+        Gruntfile: ['Gruntfile.js']
       },
 
       /* 8.JS压缩 */
       uglify: {
         options: {
-          stripBanners: true,
-          mangle: false,
-          banner: "/*! <%=pkg.name%>-<%=pkg.version%>.js <%= grunt.template.today('yyyy-mm-dd HH:MM') %> */\n"
+          banner: "/*! <%=pkg.name%>-<%=pkg.version%>.js 压缩于：<%= grunt.template.today('yyyy-mm-dd HH:MM') %> */\n",
+          footer: '\n/*! <%= pkg.name %> 最后修改于： <%= grunt.template.today("yyyy-mm-dd") %> */',
+          preserveComments: true
         },
-        srcJs: {
+
+        /* 按原目录下的每个文件结构压缩至新文件夹中 */
+        js2MinSync: {
+          options: {
+            mangle: true,
+            report: "gzip"
+          },
           files: [
             {
               expand: true,
-              cwd: srcJs,
+              cwd: js2MinSync,
               src: '{,**/}*.js',
-              dest: jsmin,
+              dest: destJs + '/js2MinSync',
               ext: '.js',
               flatten: false
             }
           ]
         },
-        cfJs: {
-          files: [
-            {
-              expand: true,
-              cwd: cfjs,
-              src: '{,**/}*.js',
-              dest: cfjsmin,
-              ext: '.js',
-              flatten: false
-            }
-          ]
+
+        /* 多合一JS压缩 */
+        js2MultSync: {
+          options: {
+            mangle: true
+          },
+          files: {
+            'dest/js/js2MultSync/js2MultSync.min.js': [js2MultSync + '/{,**/}*.js']
+          }
         }
       },
+      clean: {
+        folder: [destJs + '/js2MinSync'],
+        folder_v2: ['path/to/dir/**'],
+        contents: ['path/to/dir/*'],
+        subfolders: ['path/to/dir/*/'],
+        css: ['path/to/dir/*.css'],
+        all_css: ['path/to/dir/**/*.css']
+      },
 
-      /* 8.JS合并兼压缩 */
+      /* requireJs合并兼压缩 */
       requirejs: {
-        compile: {
+        srcJs: {
           options: {
-            baseUrl: "./",
-            include: ["src/main.js"],
-            out: "path/to/optimized.js"
+            baseUrl: './',
+            include: ['src/jsmin/1.js', 'src/jsmin/2.js'],
+            uglify2: {
+              output: {
+                beautify: false
+              },
+              compress: {
+                sequences: false,
+                global_defs: {
+                  DEBUG: false
+                }
+              },
+              warnings: true,
+              mangle: true
+            },
+            out: destJs + '/rj.js'
           }
         }
       },
@@ -212,11 +248,10 @@
       bower: {
         install: {
           options: {
-            targetDir: srcJs,
-            layout: 'byComponent',
+            targetDir: bower,
             install: true,
             verbose: false,
-            cleanTargetDir: false,
+            cleanTargetDir: true,
             cleanBowerDir: false,
             bowerOptions: {}
           }
@@ -330,24 +365,24 @@
           verbose: true,
           updateAndDelete: true
         },
-        srcJs: {
+        js2MinSync: {
           files: [
             {
-              cwd: srcJs,
-              src: ['{,**/}*.js'],
-              dest: jsmin
+              cwd: js2Min,
+              src: ['{,**/}*.js', '!{,**/}*.coffee'],
+              dest: js2MinSync
             }
           ],
           pretend: false,
           verbose: true,
           updateAndDelete: true
         },
-        cfJs: {
+        js2MultSync: {
           files: [
             {
-              cwd: cfjs,
+              cwd: js2Mult,
               src: ['{,**/}*.js', '!{,**/}*.coffee'],
-              dest: cfjsmin
+              dest: js2MultSync
             }
           ],
           pretend: false,
@@ -376,25 +411,31 @@
         /* 2.公共CSS */
         css: {
           files: [srcCss + '/{,**/}*.css'],
-          tasks: ['newer:cssmin:css', 'sync:css', 'concat:cssCat']
+          tasks: ['newer:cssmin:css', 'sync:css']
         },
 
-        /* 3.个人SCSSs */
+        /* 3.个人SCSS */
         scss: {
           files: [scss + '/{,**/}*.scss', scss + '/{,**/}*.css'],
           tasks: ['newer:sass:scss', 'newer:cssmin:scss', 'sync:scss', 'concat:scssCat']
         },
 
         /* 4.公共JS */
-        srcJs: {
-          files: [srcJs + '/{,**/}*.js'],
-          tasks: ['newer:uglify:srcJs', 'sync:srcJs', 'concat:jsCat']
+
+        /* 一一对应发布 */
+        js2Min: {
+          files: [js2Min + '/{,**/}*.{coffee,js}'],
+          tasks: ['newer:coffee:js2Min', 'sync:js2MinSync', 'clean:folder', 'uglify:js2MinSync']
         },
 
-        /* 5.个人JS */
-        cfJs: {
-          files: [cfjs + '/{,**/}*.coffee', cfjs + '/{,**/}*.js'],
-          tasks: ['newer:coffee:cfJs', 'newer:uglify:cfJs', 'sync:cfJs', 'concat:cfjsCat']
+        /* 5.个人JS以及coffeeJs */
+
+        /* 多合一发布 */
+
+        /* 编译coffeeJs，同步到cf2Mult文件夹，多合一压缩到发布目录 */
+        js2Mult: {
+          files: [js2Mult + '/{,**/}*.{coffee,js}'],
+          tasks: ['newer:coffee:js2Mult', 'sync:js2MultSync', 'newer:uglify:js2MultSync']
         },
 
         /* 6.图片压缩 */
@@ -418,7 +459,7 @@
           options: {
             livereload: '<%=connect.options.livereload%>'
           },
-          files: ['./' + srcHtml + '/{,**/}*.html', './' + srcCss + '/{,**/}*.css', './' + srcJs + '/{,**/}*.js', './' + cfjs + '/{,**/}*.js', './' + srcImg + '/{,**/}*.{png,jpg}']
+          files: ['./' + srcHtml + '/{,**/}*.html', './' + srcCss + '/{,**/}*.css', './' + js2Min + '/{,**/}*.js', './' + js2Mult + '/{,**/}*.js', './' + srcImg + '/{,**/}*.{png,jpg}']
         }
       }
     });
@@ -426,11 +467,32 @@
       pattern: ['grunt-*', '@*/grunt-*']
     });
 
+    /* 自定义requireJS任务 */
+    grunt.registerTask('reqJs', 'requireJS', function(arg1) {
+      var options, platformCfg, requireTask, taskCfg, tasks;
+      taskCfg = grunt.file.readJSON('rjsGrunt.json');
+      requireTask = taskCfg.requirejs;
+      options = requireTask.main.options;
+      if (arguments.length === 0) {
+        platformCfg = options.web;
+      } else {
+        platformCfg = options.arg1;
+      }
+      options.include = platformCfg.include;
+      options.name = platformCfg.name;
+      options.out = platformCfg.out;
+      options.paths = options.paths;
+      options.mainConfigFile = options.mainConfigFile;
+      grunt.config.set('requirejs', requireTask);
+      tasks = ['requirejs'];
+      return grunt.task.run(tasks);
+    });
+
     /* 所有 */
     grunt.registerTask('all', ['newer:sass', 'newer:cssmin', 'newer:coffee', 'newer:uglify', 'newer:concat', 'newer:copy', 'connect', 'watch']);
 
     /* JS */
-    grunt.registerTask('jsss', ['newer:coffee', 'newer:uglify', 'watch']);
+    grunt.registerTask('jsss', ['newer:coffee', 'newer:uglify', 'watch:js2Mult']);
 
     /* CSS */
     grunt.registerTask('csss', ['newer:sass', 'newer:cssmin', 'watch']);
@@ -447,23 +509,6 @@
 
     /* 文件合并 */
     grunt.registerTask('cat', ['concat']);
-
-    /* 自定义任务 */
-    grunt.registerTask('reqJs', 'requireJS', function() {
-      var options, platformCfg, requireTask, taskCfg, tasks;
-      taskCfg = grunt.file.readJSON('rjsGrunt.json');
-      requireTask = taskCfg.requirejs;
-      options = requireTask.main.options;
-      platformCfg = options.web;
-      options.include = platformCfg.include;
-      options.name = platformCfg.name;
-      options.out = platformCfg.out;
-      options.paths = options.paths;
-      options.mainConfigFile = options.mainConfigFile;
-      grunt.config.set("requirejs", requireTask);
-      tasks = ['requirejs'];
-      return grunt.task.run(tasks);
-    });
   };
 
 }).call(this);

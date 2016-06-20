@@ -353,6 +353,28 @@ module.exports = (grunt) ->
 		grunt.task.run(tasks)
 		grunt.config.set("requirejs", requireTask)
 	)
+
+
+	### 自定义requireJS任务 ###
+	grunt.registerTask('reqJs', 'requireJS', (arg1) ->
+
+		taskCfg = grunt.file.readJSON('rjsGrunt.json')
+		requireTask = taskCfg.requirejs
+		options = requireTask.main.options
+		if (arguments.length == 0)
+			platformCfg = options.web
+		else
+			platformCfg = options.arg1
+		options.include = platformCfg.include
+		options.name = platformCfg.name
+		options.out = platformCfg.out
+		options.paths = options.paths
+		options.mainConfigFile = options.mainConfigFile
+		grunt.config.set('requirejs', requireTask)
+		tasks = ['requirejs'];
+		grunt.task.run(tasks)
+	)
+
 	grunt.registerTask('all',[ 'newer:sass','newer:cssmin','newer:coffee','newer:uglify','newer:concat','newer:copy','connect','watch' ]);
 	grunt.registerTask('sy', [ 'sync','watch']);
 	grunt.registerTask('img', [ 'imagemin']);
