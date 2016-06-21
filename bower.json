@@ -19,7 +19,8 @@
   "dependencies": {
     "requirejs": "^2.2.0",
     "knockout": "^3.4.0",
-    "bootstrap-sass": "*"
+    "bootstrap-sass": "*",
+    "angular": "^1.5.7"
   },
   "devDependencies": {},
   "exportsOverride": {}

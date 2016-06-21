@@ -1,4 +1,5 @@
 module.exports = (grunt) ->
+	require('time-grunt')(grunt);
 	### 开发目录与发布目录 ###
 	dirs =
 		destDir:'dest'
@@ -11,11 +12,12 @@ module.exports = (grunt) ->
 		dirs.destDir + '/img',
 		dirs.destDir + '/fonts'
 	]
-	[destCssMin,destCssMult,destJsMin,destJsMult] = [
+	[destCssMin,destCssMult,destJsMin,destJsMult,destJsRjs] = [
 		destCss + '/css2MinSync',
 		destCss + '/css2MultSync',
-		destCss + '/js2MinSync',
-		destCss + '/js2MultSync'
+		destJs + '/js2MinSync',
+		destJs + '/js2MultSync',
+		destJs + '/jsrequire'
 	]
 
 	### 开发主页、图片、格式 ###
@@ -173,6 +175,13 @@ module.exports = (grunt) ->
 				src    :['{,**/}*.coffee']
 				dest   :js2Mult
 				ext    :'.js'
+			jsRequire:
+				expand :true
+				flatten:false
+				cwd    :jsRequire
+				src    :['{,**/}*.coffee']
+				dest   :jsRequire
+				ext    :'.js'
 		### 7.JS检查  ###
 		jshint  :
 			options  :
@@ -209,8 +218,9 @@ module.exports = (grunt) ->
 					'dest/js/js2MultSync/js2MultSync.min.js':[js2MultSync + '/{,**/}*.js']
 		### 8.清除文件夹 ###
 		clean: {
-			js2MinSync: [destJsMin],
-			css2MinSync: [destCssMin],
+			destJsMin: [destJsMin],
+			destCssMin: [destCssMin],
+			destJsRjs: [destJsRjs],
 			folder_v2: ['path/to/dir/**'],
 			contents: ['path/to/dir/*'],
 			subfolders: ['path/to/dir/*/'],
@@ -218,7 +228,6 @@ module.exports = (grunt) ->
 			all_css: ['path/to/dir/**/*.css']
 		}
 		### requireJs合并兼压缩 ###
-        ### index.js里的require(indexCfg)路径由paths告知 ###
 		requirejs:
 			index:
 				options:
@@ -234,9 +243,10 @@ module.exports = (grunt) ->
 						'requireJs',
 						'knockout',
 						'main-call',
-						'main-viewmodel'
+						'main-viewmodel',
+						'angular'
 					]
-					out           :destJs + '/requireJs.js'
+					out           :destJsRjs + '/requireJs.js'
 					uglify2       :
 						output  :
 							beautify:false
@@ -245,7 +255,7 @@ module.exports = (grunt) ->
 							global_defs:
 								DEBUG:false
 						warnings:true
-						mangle  :true
+						mangle  :false
 					
 		### 9.Bower管理引入文件  ###
 		bower    :
@@ -263,7 +273,7 @@ module.exports = (grunt) ->
 			### html、字体 ###
 			main:
 				files:[
-					{ expand:true, cwd:dirs.srcDir, src:['*.html'], dest:dirs.destDir, flatten:true, filter:'isFile' }
+					{ expand:true, cwd:srcHtml, src:['*.html'], dest:destHtml, flatten:true, filter:'isFile' }
 				]
 		### 11.建立网站连接  ###
 		connect  :
@@ -275,11 +285,12 @@ module.exports = (grunt) ->
 				port      :9080
 				hostname  :'127.0.0.1'
 				livereload:35729
-			server :
+			index:
 				options:
 					open:true
-					base:[
-						'./' + srcHtml
+					### http://127.0.0.1:9080/目录 ###
+					base: [
+						'.'
 					]
 		### 12.文件历史缓存  ###
 		newer    :
@@ -402,7 +413,7 @@ module.exports = (grunt) ->
 				tasks:[
 					'newer:sass:css2Min',
 					'sync:css2MinSync',
-					'clean:css2MinSync',
+					'clean:destCssMin',
 					'newer:cssmin:css2MinSync'
 				]
 			### 4.一一压缩JS ###
@@ -411,10 +422,9 @@ module.exports = (grunt) ->
 				tasks:[
 					'newer:coffee:js2Min',
 					'sync:js2MinSync',
-					'clean:js2MinSync',
+					'clean:destJsMin',
 					'newer:uglify:js2MinSync'
 				]
-
 			### 5.多合一Js ###
 			### 编译coffeeJs，同步到cf2Mult文件夹，多合一压缩到发布目录 ###
 			js2Mult:
@@ -424,7 +434,6 @@ module.exports = (grunt) ->
 					'sync:js2MultSync',
 					'newer:uglify:js2MultSync'
 				]
-
 			### 6.图片压缩 ###
 			imgmin :
 				files:[srcImg + '/{,**/}*']
@@ -432,8 +441,10 @@ module.exports = (grunt) ->
 					'sync:imgs']
 			htmlmin:
 				files:[srcHtml + '/{,**/}*']
-				tasks:['newer:htmlmin',
-					'sync:htmls']
+				tasks:[
+					'newer:htmlmin',
+					'sync:htmls'
+				]
 			### 7.格式文件 ###
 			fonts:
 				files:[srcFonts + '/{,**/}*']
@@ -444,10 +455,13 @@ module.exports = (grunt) ->
 					livereload:'<%=connect.options.livereload%>'
 				files  :[
 					'./' + srcHtml + '/{,**/}*.html',
-					'./' + css2Min + '/{,**/}*.css',
-					'./' + js2Min + '/{,**/}*.js',
-					'./' + js2Mult + '/{,**/}*.js',
-					'./' + srcImg + '/{,**/}*.{png,jpg}'
+					'./' + css2MinSync + '/{,**/}*.css',
+					'./' + css2MultSync + '/{,**/}*.css',
+					'./' + js2MinSync + '/{,**/}*.js',
+					'./' + js2MultSync + '/{,**/}*.js',
+					'./' + jsRequire + '/{,**/}*.js',
+					'./' + srcImg + '/{,**/}*.{png,jpg}',
+					'./' + srcFonts + '/{,**/}*'
 				]
 			### 10.bower ###
 			bower:
@@ -461,25 +475,66 @@ module.exports = (grunt) ->
 			'@*/grunt-*']
 	})
 
-	### 所有 ###
-	grunt.registerTask('all',[ 'newer:sass','newer:cssmin','newer:coffee','newer:uglify','newer:concat','newer:copy','connect','watch' ]);
 
-	### JS ###
-	grunt.registerTask('jsss', [ 'newer:coffee','newer:uglify','watch:js2Mult']);
+	### 1.项目准备 ###
+	### 导入外部文件 ###
+	grunt.registerTask('1bower', [
+		'bower:install',
+		'sync:bowerJs',
+		'watch:bower'
+	]);
+
+	### 2.项目开发 ###
+	### 所有 ###
+	grunt.registerTask('2all', [
+		'bower',
+		'sass',
+		'coffee',
+		'sync',
+		'cssmin',
+		'uglify',
+		'requirejs',
+		'connect',
+		'watch'
+	]);
 	### CSS ###
-	grunt.registerTask('csss', [ 'newer:sass','newer:cssmin','watch']);
+	grunt.registerTask('2css', [
+		'sass',
+		'sync:css2MinSync',
+		'clean:destCssMin',
+		'sync:css2MultSync',
+		'cssmin'
+	]);
+	### JS ###
+	grunt.registerTask('2js', [
+		'coffee',
+		'sync:js2MinSync',
+		'clean:destJsMin',
+		'sync:js2MultSync',
+		'uglify'
+	]);
+	### requireJs指定合并&测试index主页 ###
+	grunt.registerTask('2jsRequire', [
+		'clean:destJsRjs',
+		'coffee:jsRequire',
+		'requirejs:index'
+	]);
+	### 实时修改主页 ###
+	grunt.registerTask('2live', [ 'connect','watch']);
+
+	### 3.项目优化 ###
 	### 检查格式 ###
-	grunt.registerTask('chkCSS', [ 'csslint']);
-	grunt.registerTask('chkJS', [ 'jshint']);
-	### 实时修改 ###
-	grunt.registerTask('live', [ 'connect','watch']);
+	grunt.registerTask('3chkCss', [ 'csslint']);
+	grunt.registerTask('3chkJs', [ 'jshint']);
 	### 文件压缩 ###
-	grunt.registerTask('minify', [ 'imagemin','cssmin','uglify','htmlmin']);
+	grunt.registerTask('3allMin', [ 'imagemin','htmlmin','cssmin','uglify']);
+
+
+	### 4.其它 ###
 	### 文件合并 ###
-	grunt.registerTask('cat', [ 'concat']);
-	### 引入文件 ###
-	grunt.registerTask('bowerFile', [ 'bower:install','sync:bowerJs','watch:bower']);
-	### requireJs ###
-	grunt.registerTask('rjs', [ 'bower:install','sync:bowerJs','watch:bower']);
+	grunt.registerTask('4concat', [ 'concat']);
+	grunt.registerTask('4copy', [ 'copy']);
+
+
 
 	return;
