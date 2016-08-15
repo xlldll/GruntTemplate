@@ -1,11 +1,11 @@
 /**
- * Created by Linchuqiang on 2016/6/21.
+ * Created by LCQ on 2016/8/14.
  */
-
-define([], function() {
-	return {
-		hello: function() {
-			alert("hello, requirejs");
+	define([],function(){
+		var a = "this is app's js";
+		return{
+			hello:function(){
+				alert(a);
+			}
 		}
-	}
-});
+	});

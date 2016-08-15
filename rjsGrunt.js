@@ -1,11 +1,15 @@
 require.config( {
 	paths : {
-		'requireJs' : 'bowerJs/requirejs/require',
-		'knockout'  : 'bowerJs/knockout/knockout',
-		'jquery'    : 'bowerJs/jquery/jquery',
-		'angular'    : 'bowerJs/angular/angular'
+		'indexCfg'       : 'jsRequire/index/indexCfg',
+		'main-call'      : 'jsRequire/index/viewmodels/main_call',
+		'main-viewmodel' : 'jsRequire/index/viewmodels/main_viewmodel',
+		'requireJs'      : 'bowerJs/requirejs/require',
+		'knockout'       : 'bowerJs/knockout/knockout',
+		'jquery'         : 'bowerJs/jquery/jquery',
+		'angular'        : 'bowerJs/angular/angular',
+		'app'            : 'js2Min/app'
 	},
-	shim    : {
+	shim  : {
 		'underscore'    : {
 			exports : '_'
 		},

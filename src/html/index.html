@@ -10,7 +10,7 @@
 </head >
 
 <body >
-<img src = "../img/content/aside.jpg" alt = "aside" >
+
 <h2>ko</h2>
 <div >Name:
     <input type = "text" data-bind = "value: name" />
@@ -19,6 +19,7 @@
     <input type = "text" data-bind = "value: surname" />
 </div >
 <span data-bind = "text: fullname" ></span >
+
 <h2>angular</h2>
 <div ng-controller="MyController">
     <input type="text" ng-model="name" />
@@ -28,7 +29,9 @@
 </body >
 
 <!--首先加载了require.js，并通过 data-main 属性告诉requirejs：当你加载完以后，请加载index.js文件进行初始化-->
-<!--<script type = "text/javascript" src = "../bowerJs/requirejs/require.js" data-main = "../jsRequire/index/index" ></script >-->
-<!--测试合并JS-->
-<script type = "text/javascript" src = "../../dest/js/jsrequire/requireJs.js" ></script >
+<script type = "text/javascript" src = "../bowerJs/requirejs/require.js" data-main = "../jsRequire/index/index" ></script >
+
+<!--已合并的JS-->
+<!--<script type = "text/javascript" src = "../../dest/js/jsrequire/packageJs.js" ></script >-->
+
 </html >

@@ -227,15 +227,12 @@ module.exports = (grunt) ->
 			css: ['path/to/dir/*.css'],
 			all_css: ['path/to/dir/**/*.css']
 		}
-		### requireJs合并兼压缩 ###
+		### grunt-requireJs合并压缩打包所有相关依赖JS ###
 		requirejs:
 			index:
 				options:
+					### ./src ###
 					baseUrl       :'./' + dirs.srcDir
-					paths         :
-						'indexCfg'     :'jsRequire/index/indexCfg'
-						'main-call'     :'jsRequire/index/viewmodels/main_call'
-						'main-viewmodel':'jsRequire/index/viewmodels/main_viewmodel'
 					### 公共JS路径设置 ###
 					mainConfigFile:'rjsGrunt.js'
 					name          :'jsRequire/index/index'
@@ -244,9 +241,10 @@ module.exports = (grunt) ->
 						'knockout',
 						'main-call',
 						'main-viewmodel',
-						'angular'
+						'angular',
+						'app'
 					]
-					out           :destJsRjs + '/requireJs.js'
+					out           :destJsRjs + '/packageJs.js'
 					uglify2       :
 						output  :
 							beautify:false
@@ -256,7 +254,7 @@ module.exports = (grunt) ->
 								DEBUG:false
 						warnings:true
 						mangle  :false
-					
+
 		### 9.Bower管理引入文件  ###
 		bower    :
 			install:
@@ -264,7 +262,7 @@ module.exports = (grunt) ->
 					targetDir     :'./src/bower'
 					layout        :'byType',
 					install       :true
-					verbose       :false
+					verbose       :true
 					cleanTargetDir:true
 					cleanBowerDir :false
 					bowerOptions  :{}
@@ -484,7 +482,7 @@ module.exports = (grunt) ->
 		'watch:bower'
 	]);
 
-	### 2.项目开发 ###
+	### 2.开发环境-项目开发 ###
 	### 所有 ###
 	grunt.registerTask('2all', [
 		'bower',
@@ -513,16 +511,18 @@ module.exports = (grunt) ->
 		'sync:js2MultSync',
 		'uglify'
 	]);
-	### requireJs指定合并&测试index主页 ###
-	grunt.registerTask('2jsRequire', [
+
+	### 实时修改主页 ###
+	grunt.registerTask('2live', [ 'connect','watch']);
+
+
+	### 3.生产环境-项目优化 ###
+	### 用GruntRJS打包各依赖JS关系...... ###
+	grunt.registerTask('3packageJs', [
 		'clean:destJsRjs',
 		'coffee:jsRequire',
 		'requirejs:index'
 	]);
-	### 实时修改主页 ###
-	grunt.registerTask('2live', [ 'connect','watch']);
-
-	### 3.项目优化 ###
 	### 检查格式 ###
 	grunt.registerTask('3chkCss', [ 'csslint']);
 	grunt.registerTask('3chkJs', [ 'jshint']);
@@ -534,7 +534,5 @@ module.exports = (grunt) ->
 	### 文件合并 ###
 	grunt.registerTask('4concat', [ 'concat']);
 	grunt.registerTask('4copy', [ 'copy']);
-
-
 
 	return;
